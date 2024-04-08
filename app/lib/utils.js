@@ -5,6 +5,10 @@
  */
 const formatMessage = (args) => {
   const formatedArgss = [];
+
+  // If args is empty send null buld string
+  if (args.length === 0) return "$-1\r\n";
+
   // Add ${len} of word before each word according to RESP
   for (let i = 0; i < args.length; i++) {
     if (args[i][0] === "+") {
