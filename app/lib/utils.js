@@ -37,6 +37,11 @@ const parseData = (data) => {
   const args = [];
   for (let i = 2; i < params.length; i++) {
     if (params[i] === "") continue;
+    // Handle integer value ex. :100
+    if (params[i][0] === ":") {
+      args.push(params.substr(1));
+      continue;
+    }
     args.push(params[i]);
   }
   return { nParams, command, args };
