@@ -8,11 +8,7 @@ console.log("Logs from your program will appear here!");
 const server = net.createServer((connection) => {
   // Handle connection
   connection.on("data", (data) => {
-    const pong = "+PONG\r\n";
     handleQuery(data.toString(), connection);
-    // connection.write(pong, "utf8", () => {
-    //   console.log("Sent data back to client");
-    // });
   });
 });
 

@@ -1,19 +1,23 @@
-const { echo } = require("../commands/echo");
-const { ping } = require("../commands/ping");
-const { parseData } = require("./parser");
+const { parseData, sendMessage } = require("./utils");
 
+/**
+ * Handles the incoming request from client and manages different commands based on parsed message.
+ * @param {string} data - Message received from client
+ * @param {*} connection - Socket connection to client
+ */
 const handleQuery = (data, connection) => {
-	console.log("Data:",data)
-  const {nParams, command, query} = parseData(data);
-  console.log("Query:", query);
-	console.log("Command", command)
+  console.log("Data:", data);
+  const { nParams, command, args } = parseData(data);
+  console.log("Query:", args);
+  console.log("Command", command);
   switch (command) {
     case "echo":
-      echo(connection, query);
-			break;
-		case "ping":
-			ping(connection);
-			break;
+      sendMessage(connection, args);
+      // echo(connection, query);
+      break;
+    case "ping":
+      sendMessage(connection, ["+PONG"]);
+      break;
   }
 };
 
