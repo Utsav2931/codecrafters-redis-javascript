@@ -7,7 +7,7 @@ const { parseData, sendMessage } = require("./utils");
  */
 const handleQuery = (data, connection) => {
   const { nParams, command, args } = parseData(data);
-  console.log("Query:", args);
+  console.log("Args:", args);
   console.log("Command", command);
   switch (command) {
     case "echo":

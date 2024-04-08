@@ -1,10 +1,24 @@
 /**
  * To format string that needs to be returned
- * @param {array} messages - Array of words to format
+ * @param {array} args - Array of words to format
  * @returns {string} - Formated string with \r\n between each word to follow RESP
  */
-const formatMessage = (messages) => {
-  return messages.join("\r\n") + "\r\n"; // To append the "\r\n" at end as join does not do it.
+const formatMessage = (args) => {
+  const formatedArgss = [];
+  // Add ${len} of word before each word according to RESP
+  for (let i = 0; i < args.length; i++) {
+    if (args[i][0] === "+") {
+      formatedArgss.push(args[i]);
+    } else if (args[i][0] != "$") {
+      formatedArgss.push("$" + args[i].length.toString());
+      formatedArgss.push(args[i]);
+    } else {
+      formatedArgss.push(args[i]);
+      formatedArgss.push(args[i + 1]);
+      i++;
+    }
+  }
+  return formatedArgss.join("\r\n") + "\r\n"; // To append the "\r\n" at end as join does not do it.
 };
 
 /**
@@ -27,12 +41,12 @@ const parseData = (data) => {
 /**
  * To send message back to client
  * @param {scoket} connection - Socket connection to client
- * @param {array} messages - Array of string containing response
+ * @param {array} args - Array of string containing response
  */
-const sendMessage = (connection, messages) => {
-  const formatedMessage = formatMessage(messages);
+const sendMessage = (connection, args) => {
+  const formatedMessage = formatMessage(args);
   connection.write(formatedMessage, "utf8", () => {
-    console.log(`Sent message ${formatedMessage} to client`);
+    console.log(`Sent message ${JSON.stringify(formatedMessage)} to client`);
   });
 };
 
