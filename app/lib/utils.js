@@ -10,9 +10,7 @@ const formatMessage = (messages) => {
 /**
  * To parse the incoming data to extract command and it's argument
  * @param {string} data - Message received from the client
- * @returns {nParams: string, comamnd: string, args: array of string} 
- *     
- * 
+ * @returns {nParams: string, comamnd: string, args: array of string}
  */
 const parseData = (data) => {
   const [nParams, ...params] = data.split("\r\n");
@@ -20,6 +18,7 @@ const parseData = (data) => {
   const command = params[1];
   const args = [];
   for (let i = 2; i < params.length; i++) {
+    if (params[i] === "") continue;
     args.push(params[i]);
   }
   return { nParams, command, args };

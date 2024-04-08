@@ -6,7 +6,6 @@ const { parseData, sendMessage } = require("./utils");
  * @param {*} connection - Socket connection to client
  */
 const handleQuery = (data, connection) => {
-  console.log("Data:", data);
   const { nParams, command, args } = parseData(data);
   console.log("Query:", args);
   console.log("Command", command);
