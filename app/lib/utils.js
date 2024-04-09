@@ -33,7 +33,7 @@ const formatMessage = (args) => {
 const parseData = (data) => {
   const [nParams, ...params] = data.split("\r\n");
   console.log("Params:", params);
-  const command = params[1];
+  const command = params[1].toLowerCase();
   const args = [];
   for (let i = 2; i < params.length; i++) {
     if (params[i] === "") continue;

@@ -1,4 +1,5 @@
 const { cache } = require("./cache");
+const { set } = require("./commands");
 const { parseData, sendMessage } = require("./utils");
 
 /**
@@ -23,26 +24,9 @@ const handleQuery = (data, connection) => {
     case "ping":
       sendMessage(connection, ["+PONG"]);
       break;
-    // Ex. *3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n
-    // args = ["$3", "key", "$5", "value"]
-    // Or with expiry with px command
-    // Ex. *5\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n$2\r\npx\r\n$3\r\n100\r\n
-    // args = ["$3", "key", "$5", "value", "$2", "px", "$3", "100"]
     case "set":
-      key = args[1];
-      value = args[3];
-      cache[key] = value;
-      console.log(`Setting ${key} to ${value}`);
-      if (args.length === 8) {
-        if (args[5] === "px") {
-          const delay = parseInt(args[7]);
-          setTimeout(() => {
-            console.log(`Deleting key: ${key}`)
-            delete cache[key];
-          }, delay);
-        }
-      }
-      sendMessage(connection, ["+OK"]);
+      const response = set(args);
+      sendMessage(connection, response);
       break;
     // Ex. *2\r\n$3\r\nget\r\n$3\r\nkey
     // args = ["$3", "key"]
@@ -50,6 +34,9 @@ const handleQuery = (data, connection) => {
       key = args[1];
       if (key in cache) sendMessage(connection, [cache[key]]);
       else sendMessage(connection, []);
+      break;
+    case "info":
+      sendMessage(connection, ["role:master"]);
   }
 };
 
