@@ -1,3 +1,5 @@
+const { cache } = require("./cache");
+
 /**
  * To format string that needs to be returned
  * @param {array} args - Array of words to format
@@ -59,4 +61,12 @@ const sendMessage = (connection, args) => {
   });
 };
 
-module.exports = { parseData, sendMessage };
+/**
+ * Sets role of the server in the cache
+ * @param {string} role - Role of the server
+ */
+const setRole = (role) => {
+  cache["role"] = role;
+};
+
+module.exports = { parseData, sendMessage, setRole };

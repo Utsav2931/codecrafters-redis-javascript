@@ -36,7 +36,7 @@ const handleQuery = (data, connection) => {
       else sendMessage(connection, []);
       break;
     case "info":
-      sendMessage(connection, ["role:master"]);
+      sendMessage(connection, [`role:${cache["role"]}`]);
   }
 };
 
