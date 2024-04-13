@@ -1,5 +1,5 @@
-const { cache } = require("./cache");
-const { serverInfo } = require("./server_info");
+const { cache } = require("../global_cache/cache");
+const { serverInfo } = require("../global_cache/server_info");
 
 /**
  * To format string that needs to be returned
@@ -12,13 +12,9 @@ const formatMessage = (args) => {
   // If args is empty send null buld string
   if (args.length === 0) return "$-1\r\n";
 
-  // Add number of return parameter at the start of responsone to follor RESP array format
-  // Whole bulk string is considered one element
-  // if (args.length > 1) formatedArgs.push(`*${args.length}`);
-
   // Add ${len} of word before each word according to RESP
   for (let i = 0; i < args.length; i++) {
-    if (args[i][0] === "+") {
+    if (args[i][0] === "+" || args[i][0] ==="*") {
       formatedArgs.push(args[i]);
     } else if (args[i][0] != "$") {
       formatedArgs.push("$" + args[i].length.toString());
@@ -79,4 +75,4 @@ const setRole = (role) => {
   }
 };
 
-module.exports = { parseData, sendMessage, setRole  };
+module.exports = { parseData, sendMessage, setRole };

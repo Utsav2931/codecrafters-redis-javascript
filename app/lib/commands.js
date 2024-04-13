@@ -1,5 +1,5 @@
-const { cache } = require("./cache");
-const { serverInfo } = require("./server_info");
+const { cache } = require("../global_cache/cache");
+const { serverInfo } = require("../global_cache/server_info");
 
 /**
  * Generates response array for info command

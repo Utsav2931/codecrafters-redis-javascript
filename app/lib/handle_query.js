@@ -1,4 +1,4 @@
-const { cache } = require("./cache");
+const { cache } = require("../global_cache/cache");
 const { set, info } = require("./commands");
 const { parseData, sendMessage } = require("./utils");
 
