@@ -1,7 +1,26 @@
 const { cache } = require("./cache");
+const { serverInfo } = require("./server_info");
 
 /**
- * 
+ * Generates response array for info command
+ * will parse everything into an array which is stored in serverInfo
+ *
+ * @returns {array} - Response args
+ */
+const info = () => {
+  const currentRole = serverInfo["role"];
+  let res = `role:${currentRole}` 
+  if (currentRole === "master") {
+    const masterObj = serverInfo["master"];
+    for (const [key, value] of Object.entries(masterObj)) {
+      res += `\n${key}:${value}`
+    }
+  }
+  return [res];
+};
+
+/**
+ *
  * Ex. *3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n
  * args = ["$3", "key", "$5", "value"]
  * Or with expiry with px command
@@ -11,13 +30,13 @@ const { cache } = require("./cache");
  * @returns {Array} - Response arguments
  */
 const set = (args) => {
-  key = args[1];
-  value = args[3];
+  key = args[0];
+  value = args[1];
   cache[key] = value;
   console.log(`Setting ${key} to ${value}`);
-  if (args.length === 8) {
-    if (args[5] === "px") {
-      const delay = parseInt(args[7]);
+  if (args.length === 4) {
+    if (args[2] === "px") {
+      const delay = parseInt(args[3]);
       setTimeout(() => {
         console.log(`Deleting key: ${key}`);
         delete cache[key];
@@ -27,4 +46,4 @@ const set = (args) => {
   return ["+OK"];
 };
 
-module.exports = { set };
+module.exports = { info, set };

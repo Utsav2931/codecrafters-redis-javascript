@@ -1,5 +1,5 @@
 const { cache } = require("./cache");
-const { set } = require("./commands");
+const { set, info } = require("./commands");
 const { parseData, sendMessage } = require("./utils");
 
 /**
@@ -11,6 +11,7 @@ const handleQuery = (data, connection) => {
   const { nParams, command, args } = parseData(data);
   console.log("Args:", args);
   console.log("Command", command);
+  let response; // For response of any function from commands
   let key, value; // For get and set
   switch (command) {
     // Ex. *2\r\n$4\r\necho\r\n$3\r\nhey\r\n
@@ -25,18 +26,20 @@ const handleQuery = (data, connection) => {
       sendMessage(connection, ["+PONG"]);
       break;
     case "set":
-      const response = set(args);
+      response = set(args);
       sendMessage(connection, response);
       break;
     // Ex. *2\r\n$3\r\nget\r\n$3\r\nkey
     // args = ["$3", "key"]
     case "get":
-      key = args[1];
+      key = args[0];
       if (key in cache) sendMessage(connection, [cache[key]]);
       else sendMessage(connection, []);
       break;
     case "info":
-      sendMessage(connection, [`role:${cache["role"]}`]);
+      response = info();
+      sendMessage(connection, response);
+      break;
   }
 };
 
