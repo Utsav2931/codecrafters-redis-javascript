@@ -1,13 +1,9 @@
 const net = require("net");
 const { handleQuery } = require("./lib/handle_query");
 const { setRole } = require("./lib/utils");
+const { serverConf } = require("./global_cache/server_conf");
+const { handleMasterRes } = require("./lib/handle_master_res");
 const { masterCommunicate } = require("./lib/master_communicate");
-
-let port = 6379;
-
-// To connect to master
-let masterHost;
-let masterPort;
 
 // Loop through all the flags passed to code
 // node example.js -a -b -c
@@ -18,38 +14,42 @@ let masterPort;
 //   '-b',
 //   '-c'
 // ]
-let isSlave = false;
-// console.log("Argv:", process.argv);
-
 for (let i = 2; i < process.argv.length; i++) {
   if (process.argv[i] === "--port") {
-    port = process.argv[i + 1];
+    serverConf.port = process.argv[i + 1];
     i++;
   }
   // If --replicaof flag is present then the server is a slave server.
   else if (process.argv[i] === "--replicaof") {
-    isSlave = true;
-    masterHost = process.argv[i + 1];
-    masterPort = process.argv[i + 2];
-    console.log(`Masterhost: ${masterHost}, masterPort: ${masterPort}`);
+    serverConf.isSlave = true;
+    serverConf.masterHost = process.argv[i + 1];
+    serverConf.masterPort = process.argv[i + 2];
+    console.log(
+      `Masterhost: ${serverConf.masterHost}, masterPort: ${serverConf.masterPort}`
+    );
     i += 2;
     setRole("slave");
   }
 }
 
-if (!isSlave) setRole("master");
-
+if (!serverConf.isSlave) setRole("master");
 
 /**
  * If the current server is a slave then handshake with master
  */
-const handshakeToMaster = () => {
-  console.log("In handshake");
-  const replicaSocket = net.createConnection(masterPort, masterHost);
+const connectToMaster = () => {
+  const replicaSocket = net.createConnection(
+    serverConf.masterPort,
+    serverConf.masterHost
+  );
 
+  // Handshake
   replicaSocket.on("connect", () => {
-    console.log("Handshake");
     masterCommunicate("ping", replicaSocket);
+  });
+
+  replicaSocket.on("data", (data) => {
+    handleMasterRes(data.toString(), replicaSocket);
   });
 };
 
@@ -65,10 +65,9 @@ const server = net.createServer((connection) => {
   });
 });
 
-server.listen(port, "127.0.0.1");
+server.listen(serverConf.port, "127.0.0.1");
 
 // If the server is slave send handshake to master
-if (isSlave) {
-  console.log("calling handshake");
-  handshakeToMaster();
+if (serverConf.isSlave) {
+  connectToMaster();
 }
