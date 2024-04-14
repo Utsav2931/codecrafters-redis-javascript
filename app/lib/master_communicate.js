@@ -9,11 +9,11 @@ const { sendMessage } = require("./utils");
 const masterCommunicate = (command, connection) => {
   switch (command) {
     case "ping":
-      console.log("Sending ping to master")
+      console.log("Sending ping to master");
       sendMessage(connection, ["*1", "ping"]);
       break;
     case "replconf":
-      console.log("Sending replconf to master")
+      console.log("Sending replconf to master");
       sendMessage(connection, [
         "*3",
         "REPLCONF",
@@ -21,6 +21,10 @@ const masterCommunicate = (command, connection) => {
         serverConf.port,
       ]);
       sendMessage(connection, ["*3", "REPLCONF", "capa", "psync2"]);
+      break;
+    case "psync":
+      console.log("Sending psync to master");
+      sendMessage(connection, ["*3", "PSYNC", "?", "-1"]);
   }
 };
 

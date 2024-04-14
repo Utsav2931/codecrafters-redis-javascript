@@ -1,5 +1,7 @@
 const { masterCommunicate } = require("./master_communicate");
 
+let okCount = 0;
+
 /**
  *
  * @param {string} data - data received from master as response
@@ -11,6 +13,12 @@ const handleMasterRes = (data, connection) => {
     // Send replconf command
     console.log("Received pong sending replconf");
     masterCommunicate("replconf", connection);
+  } else if (data === "+OK\r\n") {
+    okCount += 1;
+    // ack of second replconf command
+    if (okCount === 2) {
+      masterCommunicate("psync", connection);
+    }
   }
 };
 
