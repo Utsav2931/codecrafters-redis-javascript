@@ -1,4 +1,5 @@
 const { cache } = require("../global_cache/cache");
+const { serverInfo } = require("../global_cache/server_info");
 const { set, info } = require("./commands");
 const { parseData, sendMessage } = require("./utils");
 
@@ -42,6 +43,12 @@ const handleQuery = (data, connection) => {
       break;
     case "replconf":
       sendMessage(connection, ["+OK"]);
+      break;
+    case "psync":
+      sendMessage(connection, [
+        `+FULLRESYNC ${serverInfo["master"]["master_replid"]} ${serverInfo["master"]["master_repl_offset"]}`,
+      ]);
+      break;
   }
 };
 
