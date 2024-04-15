@@ -40,6 +40,8 @@ const handleQuery = (data, connection) => {
       response = info();
       sendMessage(connection, response);
       break;
+    case "replconf":
+      sendMessage(connection, ["+OK"]);
   }
 };
 
