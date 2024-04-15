@@ -1,6 +1,8 @@
 const serverInfo = {
   role: "",
-  master: {},
+  master: {
+    replica_connection: null,
+  },
   slave: {},
 };
 
