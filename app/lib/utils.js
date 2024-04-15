@@ -4,6 +4,7 @@ const { serverInfo } = require("../global_cache/server_info");
 /**
  * To format string that needs to be returned
  * @param {array} args - Array of words to format
+ * @param {bool} isRDB - if the message is a rdb file
  * @returns {string} - Formated string with \r\n between each word to follow RESP
  */
 const formatMessage = (args) => {
@@ -14,7 +15,7 @@ const formatMessage = (args) => {
 
   // Add ${len} of word before each word according to RESP
   for (let i = 0; i < args.length; i++) {
-    if (args[i][0] === "+" || args[i][0] ==="*") {
+    if (args[i][0] === "+" || args[i][0] === "*") {
       formatedArgs.push(args[i]);
     } else if (args[i][0] != "$") {
       formatedArgs.push("$" + args[i].length.toString());
@@ -25,7 +26,9 @@ const formatMessage = (args) => {
       i++;
     }
   }
-  return formatedArgs.join("\r\n") + "\r\n"; // To append the "\r\n" at end as join does not do it.
+  // To append the "\r\n" at end as join does not do it.
+  // Dont add "\r\n" if it's rdbfile.
+  return formatedArgs.join("\r\n") + "\r\n";
 };
 
 /**
@@ -54,9 +57,10 @@ const parseData = (data) => {
  * To send message back to client
  * @param {scoket} connection - Socket connection to client
  * @param {array} args - Array of string containing response
+ * @param {bool} isRDB - (Optional) if message is a rdb file
  */
-const sendMessage = (connection, args) => {
-  const formatedMessage = formatMessage(args);
+const sendMessage = (connection, args, isRDB = false) => {
+  const formatedMessage = isRDB ? args[0] : formatMessage(args, isRDB);
   connection.write(formatedMessage, "utf8", () => {
     console.log(`Sent message ${JSON.stringify(formatedMessage)} to client`);
   });

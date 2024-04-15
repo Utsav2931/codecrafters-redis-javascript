@@ -48,8 +48,22 @@ const handleQuery = (data, connection) => {
       sendMessage(connection, [
         `+FULLRESYNC ${serverInfo["master"]["master_replid"]} ${serverInfo["master"]["master_repl_offset"]}`,
       ]);
+      // Send an empty RDB file
+      sendRDBFile(connection);
       break;
   }
 };
+
+/**
+ * Sends an empty rdb file to replica 
+ * @param {socket} connection - Socket connection  
+ */
+function sendRDBFile(connection) {
+  const base64 =
+      "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
+  const rdbBuffer = Buffer.from(base64, "base64");
+  const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`);
+  sendMessage(connection,[Buffer.concat([rdbHead, rdbBuffer])], true);
+}
 
 module.exports = { handleQuery };

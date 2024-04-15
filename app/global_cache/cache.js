@@ -1,3 +1,4 @@
-const cache = {};
+const cache = {
+};
 
 module.exports = { cache };
