@@ -33,7 +33,7 @@ const handleQuery = (data, connection, isMaster = false) => {
     case "set":
       response = set(args);
       // Propogate to replica if a replica is connected to current serevr
-      if (serverInfo.master["replica_connection"] !== null)
+      if (serverInfo.master["replica_connection"].length !== 0)
         propagateToReplica(data);
       break;
 
@@ -55,7 +55,7 @@ const handleQuery = (data, connection, isMaster = false) => {
       response = ["+OK"];
       // Store the connection to replica in serverInfo.master
       if (args[0] === "listening-port") {
-        serverInfo.master["replica_connection"] = connection;
+        serverInfo.master["replica_connection"].push(connection);
       }
       break;
 
