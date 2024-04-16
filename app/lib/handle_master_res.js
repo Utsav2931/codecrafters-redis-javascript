@@ -2,17 +2,18 @@ const { handleQuery } = require("./handle_query");
 const { masterCommunicate } = require("./master_communicate");
 
 let okCount = 0;
+let hasReceivedRDB = false;
 
 /**
  *
  * @param {string} data - data received from master as response
  * @param {socket} connection - socket connection to master
  */
-const handleMasterRes = (data, connection) => {
+const handleMasterMessage = (data, connection) => {
+  console.log("Received:", JSON.stringify(data));
   // Handshake ping response
   if (data === "+PONG\r\n") {
     // Send replconf command
-    console.log("Received pong sending replconf");
     masterCommunicate("replconf", connection);
   } else if (data === "+OK\r\n") {
     okCount += 1;
@@ -20,7 +21,47 @@ const handleMasterRes = (data, connection) => {
     if (okCount === 2) {
       masterCommunicate("psync", connection);
     }
-  } 
+  }
+  // Hardcoding for now
+  else if (data === "+OK\r\n+OK\r\n") {
+    masterCommunicate("psync", connection);
+  } else {
+    parseData(data, connection);
+  }
 };
 
-module.exports = { handleMasterRes };
+/**
+ * Will loop through the string and create RESP commands to send to handle query
+ * @param {string} data - data to parse
+ * @param {socket} connection - socket connection
+ */
+const parseData = (data, connection) => {
+  while (data) {
+    // Skip the rdb file
+    let i = getNextArray(data);
+    const strCommand = data.substring(0, i);
+    console.log("Command:", JSON.stringify(strCommand));
+
+    //Ignore anything that does not start with *
+    if (strCommand[0] === "*") handleQuery(strCommand, connection);
+
+    data = data.substring(i);
+    console.log("New data:", JSON.stringify(data));
+  }
+};
+
+/**
+ * Will find and return indext of starting of next array (*) according to RESP format
+ * @param {string} data - string data to parse
+ * @returns {int} - index of starting of next array in data
+ */
+const getNextArray = (data) => {
+  let i = 0;
+  if (data[i] === "*") i++;
+  while (i < data.length && data[i] !== "*") {
+    i++;
+  }
+  return i;
+};
+
+module.exports = { handleMasterMessage };

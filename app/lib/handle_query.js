@@ -1,4 +1,5 @@
 const { cache } = require("../global_cache/cache");
+const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { set, info } = require("./commands");
 const { propagateToReplica } = require("./propagate");
@@ -8,9 +9,8 @@ const { parseData, sendMessage } = require("./utils");
  * Handles the incoming request from client and manages different commands based on parsed message.
  * @param {string} data - Message received from client
  * @param {*} connection - Socket connection to client
- * @param {bool} isMaster - Whether the query came from master or not. If true dont send back response.
  */
-const handleQuery = (data, connection, isMaster = false) => {
+const handleQuery = (data, connection) => {
   const { nParams, command, args } = parseData(data);
   console.log("Args:", args);
   console.log("Command", command);
@@ -68,7 +68,9 @@ const handleQuery = (data, connection, isMaster = false) => {
       break;
   }
 
-  if (command !== "psync" && !isMaster) sendMessage(connection, response);
+  // Don't send reply back if the message came from master server or the command was psync
+  if (command !== "psync" && connection.remotePort !== serverConf.masterPort)
+    sendMessage(connection, response);
 };
 
 /**

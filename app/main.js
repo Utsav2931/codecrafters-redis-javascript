@@ -2,7 +2,7 @@ const net = require("net");
 const { handleQuery } = require("./lib/handle_query");
 const { setRole } = require("./lib/utils");
 const { serverConf } = require("./global_cache/server_conf");
-const { handleMasterRes } = require("./lib/handle_master_res");
+const { handleMasterMessage } = require("./lib/handle_master_res");
 const { masterCommunicate } = require("./lib/master_communicate");
 
 // Loop through all the flags passed to code
@@ -49,7 +49,7 @@ const connectToMaster = () => {
   });
 
   replicaSocket.on("data", (data) => {
-    handleMasterRes(data.toString(), replicaSocket);
+    handleMasterMessage(data.toString(), replicaSocket);
   });
 };
 
