@@ -9,7 +9,7 @@ let hasReceivedRDB = false;
  * @param {string} data - data received from master as response
  * @param {socket} connection - socket connection to master
  */
-const handleMasterMessage = (data, connection) => {
+const handleReplicaCommunication = (data, connection) => {
   console.log("Received:", JSON.stringify(data));
   // Handshake ping response
   if (data === "+PONG\r\n") {
@@ -58,10 +58,11 @@ const parseData = (data, connection) => {
 const getNextArray = (data) => {
   let i = 0;
   if (data[i] === "*") i++;
-  while (i < data.length && data[i] !== "*") {
+  while (i < data.length) {
+    if (data[i] === "*" && data[i + 1] !== "\r") break;
     i++;
   }
   return i;
 };
 
-module.exports = { handleMasterMessage };
+module.exports = { handleReplicaCommunication };

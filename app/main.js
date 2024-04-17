@@ -2,8 +2,8 @@ const net = require("net");
 const { handleQuery } = require("./lib/handle_query");
 const { setRole } = require("./lib/utils");
 const { serverConf } = require("./global_cache/server_conf");
-const { handleMasterMessage } = require("./lib/handle_master_res");
 const { masterCommunicate } = require("./lib/master_communicate");
+const { handleReplicaCommunication } = require("./lib/handle_replica_communication");
 
 // Loop through all the flags passed to code
 // node example.js -a -b -c
@@ -49,7 +49,7 @@ const connectToMaster = () => {
   });
 
   replicaSocket.on("data", (data) => {
-    handleMasterMessage(data.toString(), replicaSocket);
+    handleReplicaCommunication(data.toString(), replicaSocket);
   });
 };
 

@@ -1,7 +1,7 @@
 const { cache } = require("../global_cache/cache");
 const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
-const { set, info } = require("./commands");
+const { set, info, replconf } = require("./commands");
 const { propagateToReplica } = require("./propagate");
 const { parseData, sendMessage } = require("./utils");
 
@@ -48,15 +48,8 @@ const handleQuery = (data, connection) => {
       response = info();
       break;
 
-    // ignore for capa eof
-    // Ex. *3\r\n$8\r\nreplconf\r\n$14\r\nlistening-port\r\n$4\r\nxxxx\r\n
-    // args = ["listening-port", "xxxx"]
     case "replconf":
-      response = ["+OK"];
-      // Store the connection to replica in serverInfo.master
-      if (args[0] === "listening-port") {
-        serverInfo.master["replica_connection"].push(connection);
-      }
+      response = replconf(args, connection);
       break;
 
     case "psync":
@@ -68,8 +61,11 @@ const handleQuery = (data, connection) => {
       break;
   }
 
-  // Don't send reply back if the message came from master server or the command was psync
-  if (command !== "psync" && connection.remotePort !== serverConf.masterPort)
+  // Don't send reply back if the message came from master server (Except for replconf message) or the command was psync
+  if (
+    command !== "psync" &&
+    (connection.remotePort !== serverConf.masterPort || command === "replconf")
+  )
     sendMessage(connection, response);
 };
 

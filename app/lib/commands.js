@@ -9,11 +9,11 @@ const { serverInfo } = require("../global_cache/server_info");
  */
 const info = () => {
   const currentRole = serverInfo["role"];
-  let res = `role:${currentRole}` 
+  let res = `role:${currentRole}`;
   if (currentRole === "master") {
     const masterObj = serverInfo["master"];
     for (const [key, value] of Object.entries(masterObj)) {
-      res += `\n${key}:${value}`
+      res += `\n${key}:${value}`;
     }
   }
   return [res];
@@ -46,4 +46,26 @@ const set = (args) => {
   return ["+OK"];
 };
 
-module.exports = { info, set };
+// ignore for capa eof
+// Ex. *3\r\n$8\r\nreplconf\r\n$14\r\nlistening-port\r\n$4\r\nxxxx\r\n
+// args = ["listening-port", "xxxx"] etc.
+/**
+ * @param {array} args - Array of arguments
+ * @param {socket} connection - Socket connection
+ * @returns {array} - Response to send back
+ * */
+const replconf = (args, connection) => {
+  let response;
+  // Store the connection to replica in serverInfo.master
+  if (args[0] === "listening-port") {
+    serverInfo.master["replica_connection"].push(connection);
+    response = ["+OK"];
+  } else if (args[0] === "capa") {
+    response = ["+OK"];
+  } else if (args[0] === "GETACK") {
+    response = ["*3", "REPLCONF", "ACK", "0"];
+  }
+  return response;
+};
+
+module.exports = { info, set, replconf };
