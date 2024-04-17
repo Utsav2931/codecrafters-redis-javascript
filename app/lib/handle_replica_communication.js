@@ -1,3 +1,4 @@
+const { serverInfo } = require("../global_cache/server_info");
 const { handleQuery } = require("./handle_query");
 const { masterCommunicate } = require("./master_communicate");
 
@@ -5,7 +6,7 @@ let okCount = 0;
 let hasReceivedRDB = false;
 
 /**
- *
+ * Manages messages sent to replica.
  * @param {string} data - data received from master as response
  * @param {socket} connection - socket connection to master
  */

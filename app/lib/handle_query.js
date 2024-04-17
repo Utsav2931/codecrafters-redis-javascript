@@ -3,10 +3,11 @@ const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { set, info, replconf } = require("./commands");
 const { propagateToReplica } = require("./propagate");
-const { parseData, sendMessage } = require("./utils");
+const { parseData, sendMessage, increaseOffset } = require("./utils");
 
 /**
- * Handles the incoming request from client and manages different commands based on parsed message.
+ * Handles the incoming common requests from client and manages different commands based on parsed message.
+ * For both master and replica
  * @param {string} data - Message received from client
  * @param {*} connection - Socket connection to client
  */
@@ -64,9 +65,12 @@ const handleQuery = (data, connection) => {
   // Don't send reply back if the message came from master server (Except for replconf message) or the command was psync
   if (
     command !== "psync" &&
-    (connection.remotePort !== serverConf.masterPort || command === "replconf")
-  )
+    (connection.remotePort.toString() !== serverConf.masterPort.toString() || command === "replconf")
+  ) {
     sendMessage(connection, response);
+  }
+
+  increaseOffset(data);
 };
 
 /**

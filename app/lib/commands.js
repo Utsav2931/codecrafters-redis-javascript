@@ -63,7 +63,8 @@ const replconf = (args, connection) => {
   } else if (args[0] === "capa") {
     response = ["+OK"];
   } else if (args[0] === "GETACK") {
-    response = ["*3", "REPLCONF", "ACK", "0"];
+    // From replica to master
+    response = ["*3", "REPLCONF", "ACK", `${serverInfo.slave["offset"]}`];
   }
   return response;
 };

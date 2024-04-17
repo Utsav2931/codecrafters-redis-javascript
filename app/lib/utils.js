@@ -79,4 +79,15 @@ const setRole = (role) => {
   }
 };
 
-module.exports = { parseData, sendMessage, setRole };
+/**
+ * Will increase the offset by no. of bytes of processed commands
+ * @param {string} data - Original query that received by server to process
+ */
+const increaseOffset = (data) => {
+  if (serverInfo.role === "slave") {
+    console.log("Increasing offset by:", data.length);
+    serverInfo["slave"]["offset"] += data.length;
+  }
+};
+
+module.exports = { parseData, sendMessage, setRole, increaseOffset };

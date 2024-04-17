@@ -2,7 +2,7 @@ const { serverConf } = require("../global_cache/server_conf");
 const { sendMessage } = require("./utils");
 
 /**
- * Handles communication with the master
+ * Sends commands from replica to master
  * @param {string} command - Command to send to master
  * @param {socket} connection - socket connection to master
  */
