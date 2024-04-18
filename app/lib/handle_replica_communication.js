@@ -27,7 +27,7 @@ const handleReplicaCommunication = (data, connection) => {
   else if (data === "+OK\r\n+OK\r\n") {
     masterCommunicate("psync", connection);
   } else {
-    parseData(data, connection);
+    parseReplicaQuery(data, connection);
   }
 };
 
@@ -36,7 +36,7 @@ const handleReplicaCommunication = (data, connection) => {
  * @param {string} data - data to parse
  * @param {socket} connection - socket connection
  */
-const parseData = (data, connection) => {
+const parseReplicaQuery = (data, connection) => {
   while (data) {
     // Skip the rdb file
     let i = getNextArray(data);

@@ -60,12 +60,17 @@ const handleQuery = (data, connection) => {
       // Send an empty RDB file
       sendRDBFile(connection);
       break;
+
+    case "wait":
+      response = [":0"];
+      break;
   }
 
   // Don't send reply back if the message came from master server (Except for replconf message) or the command was psync
   if (
     command !== "psync" &&
-    (connection.remotePort.toString() !== serverConf.masterPort.toString() || command === "replconf")
+    (connection.remotePort.toString() !== serverConf.masterPort.toString() ||
+      command === "replconf")
   ) {
     sendMessage(connection, response);
   }

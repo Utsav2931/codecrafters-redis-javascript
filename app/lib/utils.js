@@ -15,7 +15,7 @@ const formatMessage = (args) => {
 
   // Add ${len} of word before each word according to RESP
   for (let i = 0; i < args.length; i++) {
-    if (args[i][0] === "+" || args[i][0] === "*") {
+    if (args[i][0] === "+" || args[i][0] === "*" || args[i][0] === ":") {
       formatedArgs.push(args[i]);
     } else if (args[i][0] != "$") {
       formatedArgs.push("$" + args[i].length.toString());
