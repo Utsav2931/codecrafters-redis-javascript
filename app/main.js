@@ -3,7 +3,9 @@ const { handleQuery } = require("./lib/handle_query");
 const { setRole } = require("./lib/utils");
 const { serverConf } = require("./global_cache/server_conf");
 const { masterCommunicate } = require("./lib/master_communicate");
-const { handleReplicaCommunication } = require("./lib/handle_replica_communication");
+const {
+  handleReplicaCommunication,
+} = require("./lib/handle_replica_communication");
 
 // Loop through all the flags passed to code
 // node example.js -a -b -c
@@ -29,6 +31,12 @@ for (let i = 2; i < process.argv.length; i++) {
     );
     i += 2;
     setRole("slave");
+  } else if (process.argv[i] === "--dir") {
+    serverConf.rdb_dir = process.argv[i + 1];
+    i++;
+  } else if (process.argv[i] === "--dbfilename") {
+    serverConf.rdb_file = process.argv[i + 1];
+    i++;
   }
 }
 

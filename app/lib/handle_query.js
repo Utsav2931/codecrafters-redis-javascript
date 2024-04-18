@@ -1,7 +1,7 @@
 const { cache } = require("../global_cache/cache");
 const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
-const { set, info, replconf, wait } = require("./commands");
+const { set, info, replconf, wait, config } = require("./commands");
 const { propagateToReplica } = require("./propagate");
 const { parseData, sendMessage, increaseOffset } = require("./utils");
 
@@ -65,12 +65,15 @@ const handleQuery = (data, connection) => {
       // response = [`:${serverInfo.master["replica_count"]}`];
       wait(args, connection);
       break;
+    case "config":
+      response = config(args);
+      break;
   }
 
   // Don't send reply back if the message came from master server (Except for replconf message) or
   // the command was psync or wait
   if (
-    response && 
+    response &&
     command !== "psync" &&
     command !== "wait" &&
     (connection.remotePort.toString() !== serverConf.masterPort.toString() ||

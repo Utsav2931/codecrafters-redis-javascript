@@ -3,7 +3,8 @@ const serverConf = {
   masterHost: "",
   masterPort: "",
   replicaPort: "",
-  isSlave: false,
+  rdb_dir: "",
+  rdb_file: "",
 };
 
 module.exports = { serverConf };

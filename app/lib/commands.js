@@ -1,4 +1,5 @@
 const { cache } = require("../global_cache/cache");
+const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { propagateToReplica } = require("./propagate");
 const { sendMessage } = require("./utils");
@@ -97,7 +98,7 @@ const wait = (args, connection) => {
     serverInfo.master.reply_wait = true;
     sendMessage(connection, [`:${serverInfo.master.replica_count}`]);
   } else {
-    propagateToReplica("*3\r\n$8\r\nreplconf\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")
+    propagateToReplica("*3\r\n$8\r\nreplconf\r\n$6\r\nGETACK\r\n$1\r\n*\r\n");
   }
   setTimeout(() => {
     if (!serverInfo.master.reply_wait)
@@ -105,6 +106,18 @@ const wait = (args, connection) => {
   }, delay);
 };
 
-const replyWait = (connection) => {};
+/**
+ * Handles config command
+ * Args: ["get", "dir"]
+ * @param {array} args - Array of arguments
+ * @returns array of response 
+ */
+const config = (args) => {
+  if (args[1] === "dir") {
+    return ["*2", "dir", serverConf.rdb_dir];
+  } else if (args[1] === "dbfilename") {
+    return ["*2", "dbfilename", serverConf.rdb_file];
+  }
+};
 
-module.exports = { info, set, replconf, wait };
+module.exports = { info, set, replconf, wait, config };
