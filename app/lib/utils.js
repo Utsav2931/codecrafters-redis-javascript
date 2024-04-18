@@ -60,7 +60,7 @@ const parseData = (data) => {
  * @param {bool} isRDB - (Optional) if message is a rdb file
  */
 const sendMessage = (connection, args, isRDB = false) => {
-  console.log("Args before format:", args)
+  console.log("Args before format:", args);
   const formatedMessage = isRDB ? args[0] : formatMessage(args, isRDB);
   connection.write(formatedMessage, "utf8", () => {
     console.log(`Sent message ${JSON.stringify(formatedMessage)} to client`);

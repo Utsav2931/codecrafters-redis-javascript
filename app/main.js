@@ -6,6 +6,7 @@ const { masterCommunicate } = require("./lib/master_communicate");
 const {
   handleReplicaCommunication,
 } = require("./lib/handle_replica_communication");
+const { readRdbFile } = require("./lib/read_rdb_file");
 
 // Loop through all the flags passed to code
 // node example.js -a -b -c
@@ -27,7 +28,7 @@ for (let i = 2; i < process.argv.length; i++) {
     serverConf.masterHost = process.argv[i + 1];
     serverConf.masterPort = process.argv[i + 2];
     console.log(
-      `Masterhost: ${serverConf.masterHost}, masterPort: ${serverConf.masterPort}`
+      `Masterhost: ${serverConf.masterHost}, masterPort: ${serverConf.masterPort}`,
     );
     i += 2;
     setRole("slave");
@@ -36,6 +37,7 @@ for (let i = 2; i < process.argv.length; i++) {
     i++;
   } else if (process.argv[i] === "--dbfilename") {
     serverConf.rdb_file = process.argv[i + 1];
+    readRdbFile();
     i++;
   }
 }
@@ -48,7 +50,7 @@ if (!serverConf.isSlave) setRole("master");
 const connectToMaster = () => {
   const replicaSocket = net.createConnection(
     serverConf.masterPort,
-    serverConf.masterHost
+    serverConf.masterHost,
   );
 
   // Handshake

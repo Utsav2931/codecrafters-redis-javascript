@@ -3,6 +3,7 @@ const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { set, info, replconf, wait, config } = require("./commands");
 const { propagateToReplica } = require("./propagate");
+const { readRdbFile } = require("./read_rdb_file");
 const { parseData, sendMessage, increaseOffset } = require("./utils");
 
 /**
@@ -67,6 +68,10 @@ const handleQuery = (data, connection) => {
       break;
     case "config":
       response = config(args);
+      break;
+    case "keys":
+      const keys = Object.keys(cache);
+      response = [`*${keys.length}`, ...keys];
       break;
   }
 
