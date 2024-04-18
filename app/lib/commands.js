@@ -59,6 +59,7 @@ const replconf = (args, connection) => {
   // Store the connection to replica in serverInfo.master
   if (args[0] === "listening-port") {
     serverInfo.master["replica_connection"].push(connection);
+    serverInfo.master["replica_count"]++;
     response = ["+OK"];
   } else if (args[0] === "capa") {
     response = ["+OK"];

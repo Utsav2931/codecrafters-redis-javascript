@@ -62,7 +62,7 @@ const handleQuery = (data, connection) => {
       break;
 
     case "wait":
-      response = [":0"];
+      response = [`:${serverInfo.master["replica_count"]}`];
       break;
   }
 
