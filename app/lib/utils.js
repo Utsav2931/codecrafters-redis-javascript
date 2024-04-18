@@ -60,6 +60,7 @@ const parseData = (data) => {
  * @param {bool} isRDB - (Optional) if message is a rdb file
  */
 const sendMessage = (connection, args, isRDB = false) => {
+  console.log("Args before format:", args)
   const formatedMessage = isRDB ? args[0] : formatMessage(args, isRDB);
   connection.write(formatedMessage, "utf8", () => {
     console.log(`Sent message ${JSON.stringify(formatedMessage)} to client`);
@@ -84,10 +85,8 @@ const setRole = (role) => {
  * @param {string} data - Original query that received by server to process
  */
 const increaseOffset = (data) => {
-  if (serverInfo.role === "slave") {
-    console.log("Increasing offset by:", data.length);
-    serverInfo["slave"]["offset"] += data.length;
-  }
+  console.log("Increasing offset by:", data.length);
+  serverInfo[serverInfo.role]["offset"] += data.length;
 };
 
 module.exports = { parseData, sendMessage, setRole, increaseOffset };

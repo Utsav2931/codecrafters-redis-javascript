@@ -1,5 +1,7 @@
 const { cache } = require("../global_cache/cache");
 const { serverInfo } = require("../global_cache/server_info");
+const { propagateToReplica } = require("./propagate");
+const { sendMessage } = require("./utils");
 
 /**
  * Generates response array for info command
@@ -66,8 +68,43 @@ const replconf = (args, connection) => {
   } else if (args[0] === "GETACK") {
     // From replica to master
     response = ["*3", "REPLCONF", "ACK", `${serverInfo.slave["offset"]}`];
+  } else if (args[0] === "ACK") {
+    // Ack received from replica
+    console.log("Ack received:");
+    serverInfo.master.ack_received++;
+    response = null;
   }
   return response;
 };
 
-module.exports = { info, set, replconf };
+/**
+ * This command blocks the current client until all the previous write commands are
+ * successfully transferred and acknowledged by at least the specified number of replicas.
+ * If the timeout, specified in milliseconds, is reached, the command returns even if the specified number
+ * of replicas were not yet reached.
+ * Ex. *3\r\n$4\r\nWAIT\r\n$1\r\n1\r\n$3\r\n500\r\n
+ * args: [1, 500]
+ * @param {array} args - Array of argument
+ * @param {socket} connection - Socket connection
+ */
+const wait = (args, connection) => {
+  const noOfReplica = parseInt(args[0]);
+  const delay = parseInt(args[1]);
+  serverInfo.master.ack_received = 0;
+  serverInfo.master.ack_needed = noOfReplica;
+  serverInfo.master.reply_wait = false;
+  if (serverInfo.master.propogated_commands === 0) {
+    serverInfo.master.reply_wait = true;
+    sendMessage(connection, [`:${serverInfo.master.replica_count}`]);
+  } else {
+    propagateToReplica("*3\r\n$8\r\nreplconf\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")
+  }
+  setTimeout(() => {
+    if (!serverInfo.master.reply_wait)
+      sendMessage(connection, [`:${serverInfo.master.ack_received}`]);
+  }, delay);
+};
+
+const replyWait = (connection) => {};
+
+module.exports = { info, set, replconf, wait };

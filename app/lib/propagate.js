@@ -15,6 +15,7 @@ const propagateToReplica = (command) => {
       console.log(`Send ${JSON.stringify(command)} to replica`);
     });
   });
+  serverInfo.master.propogated_commands++;
 };
 
 module.exports = { propagateToReplica };
