@@ -2,9 +2,13 @@ const fs = require("fs");
 const { serverConf } = require("../global_cache/server_conf");
 const { cache } = require("../global_cache/cache");
 
+/**
+ * Reads rdb binary file and stores key value pairs in cache.
+ * */
 const readRdbFile = () => {
   const opCodes = {
     resizeDb: "fb",
+    miliExp: "fc",
   };
   let i = 0;
   const dirName = serverConf.rdb_dir;
@@ -47,21 +51,37 @@ const readRdbFile = () => {
     return length;
   };
 
+  const getUnixTime = () => {
+    i++; // as i is pointing to "fc"
+    let timeStamp = getNextNBytes(8)
+      .toString("hex")
+      .split("")
+      .reverse()
+      .join(""); // Reversing timeStamp because it's in litle endian.
+    i++; // 00 Padding
+		timeStamp = "0x" + timeStamp;
+		console.log("Timestamp in hex:")
+    return Number(timeStamp);
+  };
+
   const getKeyValues = (n) => {
+    let expiryTime = "";
     for (let j = 0; j < n; j++) {
+      if (dataBuffer[i].toString(16) === opCodes.miliExp) {
+        expiryTime = getUnixTime();
+        console.log("expiryTime:", expiryTime);
+      }
       const keyLength = getNextObjLength();
       const key = getNextNBytes(keyLength).toString();
       const valueLength = getNextObjLength();
       const value = getNextNBytes(valueLength).toString();
       console.log(`Setting ${key} to ${value}`);
       cache[key] = value;
-			i++; // 00 padding.
+      if (expiryTime) {
+        cache["exp"][key] = expiryTime;
+      }
+      i++; // 00 padding.
     }
-  };
-
-  const expiryHashTable = () => {
-    const nextObjLength = getNextObjLength();
-    const nextNBytes = getNextNBytes(nextObjLength);
   };
 
   const resizeDb = () => {
@@ -69,7 +89,8 @@ const readRdbFile = () => {
     i++;
     const totalKeyVal = getNextObjLength();
     const totalExpiry = getNextObjLength();
-    i++; // There is 00 padding.
+    if (totalExpiry === 0) i++; // There is 00 padding.
+
     getKeyValues(totalKeyVal);
   };
 
