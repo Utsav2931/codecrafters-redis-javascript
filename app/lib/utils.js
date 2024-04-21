@@ -1,4 +1,4 @@
-const { cache } = require("../global_cache/cache");
+const { cache, expiry } = require("../global_cache/cache");
 const { serverInfo } = require("../global_cache/server_info");
 
 /**
@@ -89,4 +89,40 @@ const increaseOffset = (data) => {
   serverInfo[serverInfo.role]["offset"] += data.length;
 };
 
-module.exports = { parseData, sendMessage, setRole, increaseOffset };
+/** Checks if the key is expired by comparing unix timestamps of key and current time
+ *	@param {string} key
+ *	@param {int} timeStamp - Unix time timeStamp
+ *	@returns {bool} - Whether the key has expired
+ */
+const hasExpired = (key) => {
+  if (!(key in cache)) return true;
+
+  if (key in expiry) {
+    const keyTimeStamp = expiry[key];
+    const currentDate = new Date();
+    const currentTimeStamp = Math.floor(currentDate.getTime());
+
+    if (keyTimeStamp <= currentTimeStamp) {
+      deleteKey(key);
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ *	Deletes key in cache
+ *	@param {string} key
+ * */
+const deleteKey = (key) => {
+  if (key in cache) delete cache[key];
+  if (key in expiry) delete expiry[key];
+};
+module.exports = {
+  parseData,
+  sendMessage,
+  setRole,
+  increaseOffset,
+  deleteKey,
+  hasExpired,
+};

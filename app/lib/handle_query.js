@@ -4,7 +4,12 @@ const { serverInfo } = require("../global_cache/server_info");
 const { set, info, replconf, wait, config } = require("./commands");
 const { propagateToReplica } = require("./propagate");
 const { readRdbFile } = require("./read_rdb_file");
-const { parseData, sendMessage, increaseOffset } = require("./utils");
+const {
+  parseData,
+  sendMessage,
+  increaseOffset,
+  hasExpired,
+} = require("./utils");
 
 /**
  * Handles the incoming common requests from client and manages different commands based on parsed message.
@@ -43,7 +48,8 @@ const handleQuery = (data, connection) => {
     // args = ["$3", "key"]
     case "get":
       key = args[0];
-      if (key in cache) response = [cache[key]];
+      if (hasExpired(key)) response = [];
+      else response = [cache[key]];
       break;
 
     case "info":

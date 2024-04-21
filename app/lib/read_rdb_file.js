@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { serverConf } = require("../global_cache/server_conf");
-const { cache } = require("../global_cache/cache");
+const { cache, expiry } = require("../global_cache/cache");
 
 /**
  * Reads rdb binary file and stores key value pairs in cache.
@@ -59,8 +59,7 @@ const readRdbFile = () => {
       .reverse()
       .join(""); // Reversing timeStamp because it's in litle endian.
     i++; // 00 Padding
-		timeStamp = "0x" + timeStamp;
-		console.log("Timestamp in hex:")
+		timeStamp = "0x" + timeStamp; // Convert to hex string
     return Number(timeStamp);
   };
 
@@ -68,8 +67,14 @@ const readRdbFile = () => {
     let expiryTime = "";
     for (let j = 0; j < n; j++) {
       if (dataBuffer[i].toString(16) === opCodes.miliExp) {
-        expiryTime = getUnixTime();
+				i++;
+        expiryTime = dataBuffer.readBigUInt64LE(i);
+				i += 8;
         console.log("expiryTime:", expiryTime);
+      }
+			// console.log("Current buf in hex:",dataBuffer[i].toString(16))
+      if (dataBuffer[i].toString(16) === "0") {
+				i++; // Skip 00 padding.
       }
       const keyLength = getNextObjLength();
       const key = getNextNBytes(keyLength).toString();
@@ -78,9 +83,8 @@ const readRdbFile = () => {
       console.log(`Setting ${key} to ${value}`);
       cache[key] = value;
       if (expiryTime) {
-        cache["exp"][key] = expiryTime;
+        expiry[key] = expiryTime;
       }
-      i++; // 00 padding.
     }
   };
 

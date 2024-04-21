@@ -2,7 +2,7 @@ const { cache } = require("../global_cache/cache");
 const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { propagateToReplica } = require("./propagate");
-const { sendMessage } = require("./utils");
+const { sendMessage, deleteKey } = require("./utils");
 
 /**
  * Generates response array for info command
@@ -42,7 +42,7 @@ const set = (args) => {
       const delay = parseInt(args[3]);
       setTimeout(() => {
         console.log(`Deleting key: ${key}`);
-        delete cache[key];
+        deleteKey(key);
       }, delay);
     }
   }
@@ -110,7 +110,7 @@ const wait = (args, connection) => {
  * Handles config command
  * Args: ["get", "dir"]
  * @param {array} args - Array of arguments
- * @returns array of response 
+ * @returns array of response
  */
 const config = (args) => {
   if (args[1] === "dir") {
