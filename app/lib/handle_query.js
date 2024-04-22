@@ -1,7 +1,15 @@
 const { cache } = require("../global_cache/cache");
 const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
-const { set, info, replconf, wait, config, xadd } = require("./commands");
+const {
+  set,
+  info,
+  replconf,
+  wait,
+  config,
+  xadd,
+  checkType,
+} = require("./commands");
 const { propagateToReplica } = require("./propagate");
 const { readRdbFile } = require("./read_rdb_file");
 const {
@@ -90,8 +98,7 @@ const handleQuery = (data, connection) => {
     // Args = ["key"]
     case "type":
       key = args[0];
-      if (hasExpired(key)) response = ["+none"];
-      else response = ["+string"];
+      response = checkType(key);
       break;
 
     case "xadd":

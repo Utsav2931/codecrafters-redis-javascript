@@ -2,7 +2,7 @@ const { cache } = require("../global_cache/cache");
 const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { propagateToReplica } = require("./propagate");
-const { sendMessage, deleteKey } = require("./utils");
+const { sendMessage, deleteKey, hasExpired } = require("./utils");
 
 /**
  * Generates response array for info command
@@ -121,6 +121,7 @@ const config = (args) => {
 };
 
 /**
+ * Adds stream object to cache
  * @param {array} args Array of argument
  * @returns {array} array of response containing id of streamKey object
  * */
@@ -137,9 +138,20 @@ const xadd = (args) => {
     cache[streamKey][id] = { ...cache[streamKey][id], [key]: value };
   }
 
-  console.log("Stream:", cache[streamKey][id]);
-
-  return [];
+  return [id];
 };
 
-module.exports = { info, set, replconf, wait, config, xadd };
+/**
+ * Returns type of a key
+ * @param {string} key
+ * @return {array} array containing type of key.
+ * */
+const checkType = (key) => {
+  if (hasExpired(key)) return ["+none"];
+  else {
+    if (typeof cache[key] === "string") return ["+string"];
+    else return ["+stream"];
+  }
+};
+
+module.exports = { info, set, replconf, wait, config, xadd, checkType };
