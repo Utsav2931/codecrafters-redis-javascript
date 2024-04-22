@@ -48,33 +48,21 @@ const readRdbFile = () => {
         i++;
         break;
     }
-    return length;
-  };
-
-  const getUnixTime = () => {
-    i++; // as i is pointing to "fc"
-    let timeStamp = getNextNBytes(8)
-      .toString("hex")
-      .split("")
-      .reverse()
-      .join(""); // Reversing timeStamp because it's in litle endian.
-    i++; // 00 Padding
-		timeStamp = "0x" + timeStamp; // Convert to hex string
-    return Number(timeStamp);
+    return Number(length);
   };
 
   const getKeyValues = (n) => {
     let expiryTime = "";
     for (let j = 0; j < n; j++) {
       if (dataBuffer[i].toString(16) === opCodes.miliExp) {
-				i++;
+        i++;
         expiryTime = dataBuffer.readBigUInt64LE(i);
-				i += 8;
+        i += 8;
         console.log("expiryTime:", expiryTime);
       }
-			// console.log("Current buf in hex:",dataBuffer[i].toString(16))
+      // console.log("Current buf in hex:",dataBuffer[i].toString(16))
       if (dataBuffer[i].toString(16) === "0") {
-				i++; // Skip 00 padding.
+        i++; // Skip 00 padding.
       }
       const keyLength = getNextObjLength();
       const key = getNextNBytes(keyLength).toString();
@@ -92,6 +80,7 @@ const readRdbFile = () => {
     console.log("Inside resizedb");
     i++;
     const totalKeyVal = getNextObjLength();
+    console.log("Total keyval:", totalKeyVal);
     const totalExpiry = getNextObjLength();
     if (totalExpiry === 0) i++; // There is 00 padding.
 
@@ -100,7 +89,10 @@ const readRdbFile = () => {
 
   while (i < dataBuffer.length) {
     const currentHexByte = dataBuffer[i].toString(16);
-    if (currentHexByte === opCodes.resizeDb) resizeDb();
+    if (currentHexByte === opCodes.resizeDb) {
+      // console.log("currentHexByte:", currentHexByte);
+      resizeDb();
+    }
     i++;
   }
 

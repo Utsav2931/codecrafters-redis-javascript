@@ -1,8 +1,14 @@
+const { connect } = require("http2");
 const { cache } = require("../global_cache/cache");
 const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { propagateToReplica } = require("./propagate");
-const { sendMessage, deleteKey, hasExpired } = require("./utils");
+const {
+  sendMessage,
+  deleteKey,
+  hasExpired,
+  validateStreamEntry,
+} = require("./utils");
 
 /**
  * Generates response array for info command
@@ -123,13 +129,21 @@ const config = (args) => {
 /**
  * Adds stream object to cache
  * @param {array} args Array of argument
+ * @param {socket} connection socket connection
  * @returns {array} array of response containing id of streamKey object
  * */
-const xadd = (args) => {
+const xadd = (args, connection) => {
   const streamKey = args[0];
   const id = args[1];
 
   if (!(streamKey in cache)) cache[streamKey] = {};
+
+  const response = validateStreamEntry(streamKey, id);
+  if (response !== "valid") {
+    sendMessage(connection, [response], false);
+    return;
+  }
+
   if (!(id in cache[streamKey])) cache[streamKey][id] = {};
 
   for (let i = 2; i < args.length; i += 2) {
@@ -138,7 +152,9 @@ const xadd = (args) => {
     cache[streamKey][id] = { ...cache[streamKey][id], [key]: value };
   }
 
-  return [id];
+  cache[streamKey]["lastAddedId"] = id;
+
+  sendMessage(connection, [id]);
 };
 
 /**

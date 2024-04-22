@@ -4,7 +4,6 @@ const { serverInfo } = require("../global_cache/server_info");
 /**
  * To format string that needs to be returned
  * @param {array} args - Array of words to format
- * @param {bool} isRDB - if the message is a rdb file
  * @returns {string} - Formated string with \r\n between each word to follow RESP
  */
 const formatMessage = (args) => {
@@ -57,11 +56,11 @@ const parseData = (data) => {
  * To send message back to client
  * @param {scoket} connection - Socket connection to client
  * @param {array} args - Array of string containing response
- * @param {bool} isRDB - (Optional) if message is a rdb file
+ * @param {bool} needFormat - (Optional) if true then format the string
  */
-const sendMessage = (connection, args, isRDB = false) => {
-  console.log("Args before format:", args);
-  const formatedMessage = isRDB ? args[0] : formatMessage(args, isRDB);
+const sendMessage = (connection, args, needFormat = true) => {
+  const formatedMessage = needFormat ? formatMessage(args) : args[0];
+  console.log(`Sending message ${JSON.stringify(formatedMessage)} to client`);
   connection.write(formatedMessage, "utf8", () => {
     console.log(`Sent message ${JSON.stringify(formatedMessage)} to client`);
   });
@@ -118,6 +117,26 @@ const deleteKey = (key) => {
   if (key in cache) delete cache[key];
   if (key in expiry) delete expiry[key];
 };
+
+/**
+ * Validates stream entry by comparing id's of current entry and
+ * last added entry's id. Current id needs to be greater than last added entry.
+ * @param {string} streamKey
+ * @param {string} id
+ * @returns {string} Whether the entry is valid or not
+ * */
+const validateStreamEntry = (streamKey, id) => {
+  if (id <= "0-0")
+    return "-ERR The ID specified in XADD must be greater than 0-0\r\n";
+  else {
+    const lastAddedId = cache[streamKey]["lastAddedId"];
+    // console.log(`Last added ${lastAddedId} and current id ${id}`, id <= lastAddedId)
+    if (id <= lastAddedId)
+      return "-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n";
+  }
+  return "valid";
+};
+
 module.exports = {
   parseData,
   sendMessage,
@@ -125,4 +144,5 @@ module.exports = {
   increaseOffset,
   deleteKey,
   hasExpired,
+  validateStreamEntry,
 };

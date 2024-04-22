@@ -102,7 +102,8 @@ const handleQuery = (data, connection) => {
       break;
 
     case "xadd":
-      response = xadd(args);
+      xadd(args, connection);
+      response = null;
       break;
   }
 
@@ -130,7 +131,7 @@ function sendRDBFile(connection) {
     "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
   const rdbBuffer = Buffer.from(base64, "base64");
   const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`);
-  sendMessage(connection, [Buffer.concat([rdbHead, rdbBuffer])], true);
+  sendMessage(connection, [Buffer.concat([rdbHead, rdbBuffer])], false);
 }
 
 module.exports = { handleQuery };
