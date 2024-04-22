@@ -68,16 +68,30 @@ const handleQuery = (data, connection) => {
       sendRDBFile(connection);
       break;
 
+    // Ex. *2\r\n*4\r\nwait\r\n500\r\n
+    // Args = ["500"]
     case "wait":
       // response = [`:${serverInfo.master["replica_count"]}`];
       wait(args, connection);
       break;
+
     case "config":
       response = config(args);
       break;
+
+    // Ex. *1\r\n$4\r\nkeys\r\n
+    // Args = []
     case "keys":
       const keys = Object.keys(cache);
       response = [`*${keys.length}`, ...keys];
+      break;
+
+    // Ex. *2\r\n$4\r\ntype\r\n${len}\r\nkey\r\n
+    // Args = ["key"]
+    case "type":
+      key = args[0];
+      if (hasExpired(key)) response = ["+none"];
+      else response = ["+string"];
       break;
   }
 
