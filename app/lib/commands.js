@@ -120,4 +120,26 @@ const config = (args) => {
   }
 };
 
-module.exports = { info, set, replconf, wait, config };
+/**
+ * @param {array} args Array of argument
+ * @returns {array} array of response containing id of streamKey object
+ * */
+const xadd = (args) => {
+  const streamKey = args[0];
+  const id = args[1];
+
+  if (!(streamKey in cache)) cache[streamKey] = {};
+  if (!(id in cache[streamKey])) cache[streamKey][id] = {};
+
+  for (let i = 2; i < args.length; i += 2) {
+    const key = args[i];
+    const value = args[i + 1];
+    cache[streamKey][id] = { ...cache[streamKey][id], [key]: value };
+  }
+
+  console.log("Stream:", cache[streamKey][id]);
+
+  return [];
+};
+
+module.exports = { info, set, replconf, wait, config, xadd };
