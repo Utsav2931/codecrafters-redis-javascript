@@ -7,8 +7,8 @@ const {
   sendMessage,
   deleteKey,
   hasExpired,
-  validateStreamEntry,
 } = require("./utils");
+const { generateStreamSequence, validateStreamEntry } = require("./command_helper");
 
 /**
  * Generates response array for info command
@@ -134,9 +134,12 @@ const config = (args) => {
  * */
 const xadd = (args, connection) => {
   const streamKey = args[0];
-  const id = args[1];
+  let id = args[1];
 
   if (!(streamKey in cache)) cache[streamKey] = {};
+	id = generateStreamSequence(streamKey, id);
+
+	console.log("Generated id:",id)
 
   const response = validateStreamEntry(streamKey, id);
   if (response !== "valid") {

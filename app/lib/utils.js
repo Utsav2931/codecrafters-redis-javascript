@@ -118,25 +118,6 @@ const deleteKey = (key) => {
   if (key in expiry) delete expiry[key];
 };
 
-/**
- * Validates stream entry by comparing id's of current entry and
- * last added entry's id. Current id needs to be greater than last added entry.
- * @param {string} streamKey
- * @param {string} id
- * @returns {string} Whether the entry is valid or not
- * */
-const validateStreamEntry = (streamKey, id) => {
-  if (id <= "0-0")
-    return "-ERR The ID specified in XADD must be greater than 0-0\r\n";
-  else {
-    const lastAddedId = cache[streamKey]["lastAddedId"];
-    // console.log(`Last added ${lastAddedId} and current id ${id}`, id <= lastAddedId)
-    if (id <= lastAddedId)
-      return "-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n";
-  }
-  return "valid";
-};
-
 module.exports = {
   parseData,
   sendMessage,
@@ -144,5 +125,4 @@ module.exports = {
   increaseOffset,
   deleteKey,
   hasExpired,
-  validateStreamEntry,
 };

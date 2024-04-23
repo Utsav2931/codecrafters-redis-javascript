@@ -90,7 +90,7 @@ const readRdbFile = () => {
   while (i < dataBuffer.length) {
     const currentHexByte = dataBuffer[i].toString(16);
     if (currentHexByte === opCodes.resizeDb) {
-      // console.log("currentHexByte:", currentHexByte);
+      console.log("currentHexByte:", currentHexByte);
       resizeDb();
     }
     i++;
