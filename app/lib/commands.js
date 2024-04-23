@@ -136,6 +136,9 @@ const xadd = (args, connection) => {
   const streamKey = args[0];
   let id = args[1];
 
+	// Generate id
+	if (id === "*") id = Date.now().toString() + "-*";
+
   if (!(streamKey in cache)) cache[streamKey] = {};
 	id = generateStreamSequence(streamKey, id);
 
