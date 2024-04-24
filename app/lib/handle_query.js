@@ -9,7 +9,8 @@ const {
   config,
   xadd,
   checkType,
-  xrang,
+  xrange,
+  xread,
 } = require("./commands");
 const { propagateToReplica } = require("./propagate");
 const { readRdbFile } = require("./read_rdb_file");
@@ -108,7 +109,11 @@ const handleQuery = (data, connection) => {
       break;
 
     case "xrange":
-      response = xrang(args);
+      response = xrange(args);
+      break;
+
+    case "xread":
+      response = xread(args);
       break;
   }
 

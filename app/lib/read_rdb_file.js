@@ -9,6 +9,7 @@ const readRdbFile = () => {
   const opCodes = {
     resizeDb: "fb",
     miliExp: "fc",
+    eof: "ff",
   };
   let i = 0;
   const dirName = serverConf.rdb_dir;
@@ -93,6 +94,7 @@ const readRdbFile = () => {
       console.log("currentHexByte:", currentHexByte);
       resizeDb();
     }
+    if (currentHexByte === opCodes.eof) break;
     i++;
   }
 

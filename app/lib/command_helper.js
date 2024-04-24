@@ -17,7 +17,7 @@ const generateStreamSequence = (streamKey, id) => {
     if (sequenceNumber === -1) {
       return idPrefix === "0" ? "0-1" : `${idPrefix}-0`;
     } else {
-			console.log("sequence:", sequenceNumber, "prefix:", idPrefix);
+      console.log("sequence:", sequenceNumber, "prefix:", idPrefix);
       return `${idPrefix}-${sequenceNumber + 1}`;
     }
   }
@@ -30,13 +30,13 @@ const generateStreamSequence = (streamKey, id) => {
  * */
 const getSequenceNumber = (prefix, streamKey) => {
   const keys = Object.keys(cache[streamKey]);
-	let sequenceNumber = -1;
+  let sequenceNumber = -1;
 
   keys.forEach((key) => {
     const saperatorIndex = key.indexOf("-");
     const keyPrefix = key.substring(0, saperatorIndex);
     const postFix = key.substring(saperatorIndex + 1);
-    if (keyPrefix === prefix) sequenceNumber =  Number(postFix);
+    if (keyPrefix === prefix) sequenceNumber = Number(postFix);
   });
 
   return sequenceNumber;
@@ -61,4 +61,33 @@ const validateStreamEntry = (streamKey, id) => {
   return "valid";
 };
 
-module.exports = { validateStreamEntry, generateStreamSequence };
+/**
+ * @param {string} command - Command that is requesting the stream
+ * @param {string} streamKey
+ * @param {string} range1 - Starting range
+ * @param {string} range2 - Ending range
+ * @returns {array} Multi dimentional array containing values of a stream key.
+ * */
+const getStreamWithInRange = (command, streamKey, range1, range2 = "99999999999999-9") => {
+  const entries = [];
+
+  Object.keys(cache[streamKey]).forEach((id) => {
+    if (
+      (id > range1 || (command === "xrange" && id >= range1)) &&
+      id <= range2
+    ) {
+      const subObj = cache[streamKey][id];
+      const subArr = [];
+      Object.keys(subObj).forEach((key) => {
+        subArr.push(key);
+        subArr.push(subObj[key]);
+      });
+      const entry = [id, subArr];
+      entries.push(entry);
+    }
+  });
+
+  return entries;
+};
+
+module.exports = { validateStreamEntry, generateStreamSequence, getStreamWithInRange};

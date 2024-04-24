@@ -6,6 +6,7 @@ const { sendMessage, deleteKey, hasExpired, formatArray } = require("./utils");
 const {
   generateStreamSequence,
   validateStreamEntry,
+  getStreamWithInRange,
 } = require("./command_helper");
 
 /**
@@ -174,36 +175,50 @@ const checkType = (key) => {
   }
 };
 
-const xrang = (args) => {
+/**
+ * The XRANGE command retrieves a range of entries from a stream.
+ * @param {array} args Array of argument containing range.
+ * @returns {array} Response
+ * */
+const xrange = (args) => {
   const streamKey = args[0];
   let range1 = args[1];
   let range2 = args[2];
 
   if (range1 === "-") range1 = "0";
-	if (range2 === "+") range2 = "99999999999999999999"
+  if (range2 === "+") range2 = "99999999999999999999-9";
 
   if (range1.indexOf("-") === -1) range1 += "-0";
   if (range2.indexOf("-") === -1) range2 += "-0";
-  console.log("Rnage1:", range1, "range2:", range2);
+  console.log("range1:", range1, "range2", range2);
 
-  const entries = [];
-
-  Object.keys(cache[streamKey]).forEach((id) => {
-    if (id >= range1 && id <= range2) {
-      const subObj = cache[streamKey][id];
-      const subArr = [];
-      Object.keys(subObj).forEach((key) => {
-        subArr.push(key);
-        subArr.push(subObj[key]);
-      });
-      const entry = [id, subArr];
-      entries.push(entry);
-    }
-  });
-
+  const entries = getStreamWithInRange("xrange", streamKey, range1, range2);
+  console.log("Entries for xrange:", entries);
   // console.log("Extries for xrang:", entries, entries.length);
   // console.log("Formated array:", formatArray(entries));
+  // if (command === "xread")
+  //   console.log("xread:", ["*1", "*2", streamKey, ...formatArray(entries)]);
   return formatArray(entries);
 };
 
-module.exports = { info, set, replconf, wait, config, xadd, checkType, xrang };
+const xread = (args) => {
+  args.shift();
+  const streamKey = args[0];
+  const range1 = args[1];
+  if (range1.indexOf("-") === -1) range1 += "-0";
+  const entries = getStreamWithInRange("xread", streamKey, range1);
+  console.log("Entries for xread:", entries);
+  return formatArray(entries);
+};
+
+module.exports = {
+  info,
+  set,
+  replconf,
+  wait,
+  config,
+  xadd,
+  checkType,
+  xrange,
+	xread,
+};
