@@ -118,6 +118,24 @@ const deleteKey = (key) => {
   if (key in expiry) delete expiry[key];
 };
 
+/**
+ * Formats an array according to RESP standard.
+ * @param {array} args argument array to format
+ * @returns {array} formated array with args
+ * */
+const formatArray = (args) => {
+  const response = [];
+  response.push(`*${args.length}`);
+  for (const arg of args) {
+    if (Array.isArray(arg)) {
+			response.push(...formatArray(arg))
+    } else {
+      response.push(arg);
+    }
+  }
+  return response;
+};
+
 module.exports = {
   parseData,
   sendMessage,
@@ -125,4 +143,5 @@ module.exports = {
   increaseOffset,
   deleteKey,
   hasExpired,
+  formatArray,
 };

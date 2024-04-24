@@ -1,14 +1,12 @@
-const { connect } = require("http2");
 const { cache } = require("../global_cache/cache");
 const { serverConf } = require("../global_cache/server_conf");
 const { serverInfo } = require("../global_cache/server_info");
 const { propagateToReplica } = require("./propagate");
+const { sendMessage, deleteKey, hasExpired, formatArray } = require("./utils");
 const {
-  sendMessage,
-  deleteKey,
-  hasExpired,
-} = require("./utils");
-const { generateStreamSequence, validateStreamEntry } = require("./command_helper");
+  generateStreamSequence,
+  validateStreamEntry,
+} = require("./command_helper");
 
 /**
  * Generates response array for info command
@@ -136,13 +134,13 @@ const xadd = (args, connection) => {
   const streamKey = args[0];
   let id = args[1];
 
-	// Generate id
-	if (id === "*") id = Date.now().toString() + "-*";
+  // Generate id
+  if (id === "*") id = Date.now().toString() + "-*";
 
   if (!(streamKey in cache)) cache[streamKey] = {};
-	id = generateStreamSequence(streamKey, id);
+  id = generateStreamSequence(streamKey, id);
 
-	console.log("Generated id:",id)
+  console.log("Generated id:", id);
 
   const response = validateStreamEntry(streamKey, id);
   if (response !== "valid") {
@@ -176,4 +174,33 @@ const checkType = (key) => {
   }
 };
 
-module.exports = { info, set, replconf, wait, config, xadd, checkType };
+const xrang = (args) => {
+  const streamKey = args[0];
+  let range1 = args[1];
+  let range2 = args[2];
+
+  if (range1.indexOf("-") === -1) range1 += "-0";
+  if (range2.indexOf("-") === -1) range2 += "-0";
+  console.log("Rnage1:", range1, "range2:", range2);
+
+  const entries = [];
+
+  Object.keys(cache[streamKey]).forEach((id) => {
+    if (id >= range1 && id <= range2) {
+      const subObj = cache[streamKey][id];
+      const subArr = [];
+      Object.keys(subObj).forEach((key) => {
+        subArr.push(key);
+        subArr.push(subObj[key]);
+      });
+			const entry = [id, subArr];
+			entries.push(entry);
+    }
+  });
+
+  // console.log("Extries for xrang:", entries, entries.length);
+  // console.log("Formated array:", formatArray(entries));
+	return formatArray(entries)
+};
+
+module.exports = { info, set, replconf, wait, config, xadd, checkType, xrang };
