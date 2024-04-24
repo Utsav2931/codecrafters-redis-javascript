@@ -180,6 +180,7 @@ const xrang = (args) => {
   let range2 = args[2];
 
   if (range1 === "-") range1 = "0";
+	if (range2 === "+") range2 = "99999999999999999999"
 
   if (range1.indexOf("-") === -1) range1 += "-0";
   if (range2.indexOf("-") === -1) range2 += "-0";
