@@ -179,6 +179,8 @@ const xrang = (args) => {
   let range1 = args[1];
   let range2 = args[2];
 
+  if (range1 === "-") range1 = "0";
+
   if (range1.indexOf("-") === -1) range1 += "-0";
   if (range2.indexOf("-") === -1) range2 += "-0";
   console.log("Rnage1:", range1, "range2:", range2);
@@ -193,14 +195,14 @@ const xrang = (args) => {
         subArr.push(key);
         subArr.push(subObj[key]);
       });
-			const entry = [id, subArr];
-			entries.push(entry);
+      const entry = [id, subArr];
+      entries.push(entry);
     }
   });
 
   // console.log("Extries for xrang:", entries, entries.length);
   // console.log("Formated array:", formatArray(entries));
-	return formatArray(entries)
+  return formatArray(entries);
 };
 
 module.exports = { info, set, replconf, wait, config, xadd, checkType, xrang };
