@@ -203,10 +203,18 @@ const xrange = (args) => {
 
 /**
  * XREAD allow querying multiple streams.
+ * args = [(opt) block, (opt)1000, streams, stream-x, id-1.....]
  * @param {array} args
- * @returns {array} Response containing all the streamKeys with values given in the query
+ * @returns {Promise<array>} Response containing all the streamKeys with values given in the query
  * */
-const xread = (args) => {
+const xread = async (args) => {
+	// Block the call if --block argument is passed.
+  if (args[0] === "block") {
+    const delay = parseInt(args[1]);
+    await new Promise((r) => setTimeout(r, delay));
+    args.shift();
+    args.shift();
+  }
   args.shift();
   const halfWay = args.length / 2;
   const entries = [];
@@ -215,10 +223,11 @@ const xread = (args) => {
     const streamKey = args[i];
     let range1 = args[i + halfWay];
     if (range1.indexOf("-") === -1) range1 += "-0";
-    entries.push([streamKey, getStreamWithInRange("xread", streamKey, range1)]);
+    const res = getStreamWithInRange("xread", streamKey, range1);
+    if (res.length > 0) entries.push([streamKey, res]);
   }
   console.log("Entries for xread:", entries);
-  return formatArray(entries);
+  return entries.length > 0 ? formatArray(entries) : [];
 };
 
 module.exports = {

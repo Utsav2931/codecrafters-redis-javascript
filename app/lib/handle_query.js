@@ -27,12 +27,12 @@ const {
  * @param {string} data - Message received from client
  * @param {*} connection - Socket connection to client
  */
-const handleQuery = (data, connection) => {
+const handleQuery = async (data, connection) => {
   const { nParams, command, args } = parseData(data);
   console.log("Args:", args);
   console.log("Command", command);
   let response = []; // For response of any function from commands
-  let key, value; // For get and set
+  let key; // For get and set
   switch (command) {
     // Ex. *2\r\n$4\r\necho\r\n$3\r\nhey\r\n
     // args = ["$3", "hey"]
@@ -113,7 +113,7 @@ const handleQuery = (data, connection) => {
       break;
 
     case "xread":
-      response = xread(args);
+      response = await xread(args);
       break;
   }
 
