@@ -1,4 +1,6 @@
 const { cache } = require("../global_cache/cache");
+const { serverInfo } = require("../global_cache/server_info");
+const { sleep } = require("./utils");
 
 /**
  * Generated stream key id's sequence if it is not present.
@@ -68,7 +70,12 @@ const validateStreamEntry = (streamKey, id) => {
  * @param {string} range2 - Ending range
  * @returns {array} Multi dimentional array containing values of a stream key.
  * */
-const getStreamWithInRange = (command, streamKey, range1, range2 = "99999999999999-9") => {
+const getStreamWithInRange = (
+  command,
+  streamKey,
+  range1,
+  range2 = "99999999999999-9",
+) => {
   const entries = [];
 
   Object.keys(cache[streamKey]).forEach((id) => {
@@ -90,4 +97,32 @@ const getStreamWithInRange = (command, streamKey, range1, range2 = "999999999999
   return entries;
 };
 
-module.exports = { validateStreamEntry, generateStreamSequence, getStreamWithInRange};
+/**
+ * Blocks execution of xread command until spacifed amount.
+ * @param {int} delay
+ * */
+const blockXread = async (delay) => {
+  if (delay === 0) {
+    console.log("Blocking xread until receiving a new stream");
+    serverInfo.xreadWaiting = true;
+    await new Promise(async (r) => {
+      while (true) {
+        await sleep(100);
+        if ((serverInfo.xreadWaiting === false)) {
+          console.log("Got a new stream continuing xread execution");
+          r();
+          break;
+        }
+      }
+    });
+  } else {
+    await sleep(delay);
+  }
+};
+
+module.exports = {
+  validateStreamEntry,
+  generateStreamSequence,
+  getStreamWithInRange,
+  blockXread,
+};

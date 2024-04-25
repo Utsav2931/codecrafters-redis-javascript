@@ -136,6 +136,10 @@ const formatArray = (args) => {
   return response;
 };
 
+const sleep = async (delay) => {
+	await new Promise(r => setTimeout(r, delay));
+}
+
 module.exports = {
   parseData,
   sendMessage,
@@ -144,4 +148,5 @@ module.exports = {
   deleteKey,
   hasExpired,
   formatArray,
+	sleep,
 };

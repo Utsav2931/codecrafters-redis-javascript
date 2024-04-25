@@ -94,8 +94,12 @@ const readRdbFile = () => {
       console.log("currentHexByte:", currentHexByte);
       resizeDb();
     }
-    if (currentHexByte === opCodes.eof) break;
-    i++;
+		else if (currentHexByte === opCodes.eof) {
+      console.log("Breaking reading rdb buffer");
+      break;
+    } else {
+			i++;
+		}
   }
 
   return null;

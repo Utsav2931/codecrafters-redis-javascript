@@ -7,6 +7,7 @@ const {
   generateStreamSequence,
   validateStreamEntry,
   getStreamWithInRange,
+  blockXread,
 } = require("./command_helper");
 
 /**
@@ -159,6 +160,8 @@ const xadd = (args, connection) => {
 
   cache[streamKey]["lastAddedId"] = id;
 
+  if (serverInfo.xreadWaiting === true) serverInfo.xreadWaiting = false;
+
   sendMessage(connection, [id]);
 };
 
@@ -198,6 +201,7 @@ const xrange = (args) => {
   // console.log("Formated array:", formatArray(entries));
   // if (command === "xread")
   //   console.log("xread:", ["*1", "*2", streamKey, ...formatArray(entries)]);
+
   return formatArray(entries);
 };
 
@@ -208,10 +212,10 @@ const xrange = (args) => {
  * @returns {Promise<array>} Response containing all the streamKeys with values given in the query
  * */
 const xread = async (args) => {
-	// Block the call if --block argument is passed.
+  // Block the call if --block argument is passed.
   if (args[0] === "block") {
     const delay = parseInt(args[1]);
-    await new Promise((r) => setTimeout(r, delay));
+    await blockXread(delay);
     args.shift();
     args.shift();
   }

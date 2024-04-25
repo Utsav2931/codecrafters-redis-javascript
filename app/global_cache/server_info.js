@@ -12,6 +12,7 @@ const serverInfo = {
   slave: {
     offset: 0,
   },
+  xreadWaiting: false, // To indicate whether xread is waiting for new stream or not.
 };
 
 module.exports = { serverInfo };
