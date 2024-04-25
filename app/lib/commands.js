@@ -201,12 +201,22 @@ const xrange = (args) => {
   return formatArray(entries);
 };
 
+/**
+ * XREAD allow querying multiple streams.
+ * @param {array} args
+ * @returns {array} Response containing all the streamKeys with values given in the query
+ * */
 const xread = (args) => {
   args.shift();
-  const streamKey = args[0];
-  const range1 = args[1];
-  if (range1.indexOf("-") === -1) range1 += "-0";
-  const entries = getStreamWithInRange("xread", streamKey, range1);
+  const halfWay = args.length / 2;
+  const entries = [];
+
+  for (let i = 0; i < halfWay; i++) {
+    const streamKey = args[i];
+    let range1 = args[i + halfWay];
+    if (range1.indexOf("-") === -1) range1 += "-0";
+    entries.push([streamKey, getStreamWithInRange("xread", streamKey, range1)]);
+  }
   console.log("Entries for xread:", entries);
   return formatArray(entries);
 };
@@ -220,5 +230,5 @@ module.exports = {
   xadd,
   checkType,
   xrange,
-	xread,
+  xread,
 };
