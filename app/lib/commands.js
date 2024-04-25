@@ -225,9 +225,23 @@ const xread = async (args) => {
 
   for (let i = 0; i < halfWay; i++) {
     const streamKey = args[i];
-    let range1 = args[i + halfWay];
-    if (range1.indexOf("-") === -1) range1 += "-0";
-    const res = getStreamWithInRange("xread", streamKey, range1);
+    let res = [];
+    let range = args[i + halfWay];
+		// $ does not get parsed.
+		if (range === undefined) range = "$"
+
+    if (range === "$") {
+      // If range is $ we want to get only newly added entry. Use xrange
+      // as it will have inclusive range.
+      res = getStreamWithInRange(
+        "xrange",
+        streamKey,
+        cache[streamKey]["lastAddedId"],
+      );
+    } else {
+      if (range.indexOf("-") === -1) range += "-0";
+      res = getStreamWithInRange("xread", streamKey, range);
+    }
     if (res.length > 0) entries.push([streamKey, res]);
   }
   console.log("Entries for xread:", entries);
