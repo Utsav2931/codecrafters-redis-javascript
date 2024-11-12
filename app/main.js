@@ -24,13 +24,14 @@ for (let i = 2; i < process.argv.length; i++) {
   }
   // If --replicaof flag is present then the server is a slave server.
   else if (process.argv[i] === "--replicaof") {
+		const masterHost = process.argv[i + 1].split(" ")
     serverConf.isSlave = true;
-    serverConf.masterHost = process.argv[i + 1];
-    serverConf.masterPort = process.argv[i + 2];
+    serverConf.masterHost = masterHost[0];
+    serverConf.masterPort = masterHost[1];
     console.log(
       `Masterhost: ${serverConf.masterHost}, masterPort: ${serverConf.masterPort}`,
     );
-    i += 2;
+    i += 1;
     setRole("slave");
   } else if (process.argv[i] === "--dir") {
     serverConf.rdb_dir = process.argv[i + 1];
