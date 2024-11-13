@@ -58,8 +58,12 @@ const exec = (connection) => {
 	if (multi["isMulti"] === false) {
 		sendMessage(connection, ["-ERR EXEC without MULTI\r\n"], false)
 	} else {
-		for (let i = 0; i < cache["commandQueue"].length; i++) {
-			handleQuery(cache["commandQueue"][i])
+		if (multi["commandQueue"].length === 0) {
+			sendMessage(connection, ["*0\r\n"], false)
+		} else {
+			for (let i = 0; i < cache["commandQueue"].length; i++) {
+				handleQuery(cache["commandQueue"][i])
+			}
 		}
 		multi["isMulti"] = false
 		multi["commandQueue"] = []

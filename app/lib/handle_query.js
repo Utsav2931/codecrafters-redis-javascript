@@ -16,11 +16,7 @@ const {
 	exec,
 } = require("./commands");
 const { propagateToReplica } = require("./propagate");
-const {
-	parseData,
-	sendMessage,
-	increaseOffset,
-} = require("./utils");
+const { parseData, sendMessage, increaseOffset } = require("./utils");
 
 /**
  * Handles the incoming common requests from client and manages different commands based on parsed message.
@@ -29,16 +25,20 @@ const {
  * @param {*} connection - Socket connection to client
  */
 const handleQuery = async (data, connection) => {
-	// if the multi command is active, queue all the commands.
-	if (multi["isMulti"]) {
-		multi["commandQueue"].push(data)
-		return
-	}
 	const { _, command, args } = parseData(data);
 	console.log("Args:", args);
 	console.log("Command", command);
 	let response = []; // For response of any function from commands
 	let key; // For get and set
+
+	// if the multi command is active, queue all the commands.
+	if (multi["isMulti"] && command !== "exec") {
+		multi["commandQueue"].push(data);
+		sendMessage(connection, ["+QUEUED"]);
+		console.log("Connection:",connection)
+		return;
+	}
+
 	switch (command) {
 		// Ex. *2\r\n$4\r\necho\r\n$3\r\nhey\r\n
 		// args = ["$3", "hey"]
@@ -66,25 +66,24 @@ const handleQuery = async (data, connection) => {
 			// key = args[0];
 			// if (hasExpired(key)) response = [];
 			// else response = [cache[key]];
-			response = get(args)
+			response = get(args);
 			break;
 
 		case "incr":
-			incr(args, connection)
+			incr(args, connection);
 
 		case "info":
 			response = info();
 			break;
 
 		case "multi":
-			response = ["+OK"]
-			multi["isMulti"] = true
+			response = ["+OK"];
+			multi["isMulti"] = true;
 			break;
 
 		case "exec":
-			response = exec(connection)
+			response = exec(connection);
 			break;
-
 
 		case "replconf":
 			response = replconf(args, connection);

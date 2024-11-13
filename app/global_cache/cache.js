@@ -2,7 +2,7 @@ const cache = {};
 
 const multi = {
 	isMulti: false,
-	commandQuquq: [],
+	commandQueue: [],
 }
 
 const expiry = {}; // Will store unix timestamp for expiry of a key from .rdb file
